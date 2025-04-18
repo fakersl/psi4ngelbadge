@@ -10,53 +10,31 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
 client.commands = new Collection();
 const commandsPath = path.join(__dirname, "commands");
-const commandFiles = fs.readdirSync(commandsPath).filter((file) => file.endsWith(".js"));
+const commandFiles = fs
+  .readdirSync(commandsPath)
+  .filter((file) => file.endsWith(".js"));
 
 for (const file of commandFiles) {
   const command = require(path.join(commandsPath, file));
   client.commands.set(command.data.name, command);
 }
 
-client.once("ready", () => {
+client.once("ready", async () => {
   console.log(`🤖 Bot online: ${client.user.tag}`);
 
-  const lastPingPath = path.join(__dirname, "lastPing.json");
-
-  function getLastDate() {
-    try {
-      const data = fs.readFileSync(lastPingPath, "utf-8");
-      return JSON.parse(data).lastDate;
-    } catch {
-      return "";
+  // Executando o comando automaticamente ao iniciar o bot
+  const command = client.commands.get("ping"); // Comando a ser executado automaticamente
+  if (command) {
+    // Defina o canal que você quer que o comando seja enviado
+    const guild = await client.guilds.fetch(process.env.GUILD_ID);
+    const channel = guild.channels.cache.find(
+      (c) => c.isTextBased() && c.viewable
+    );
+    if (channel) {
+      await channel.send("/ping"); // Envia o comando para o canal desejado
+      console.log("📤 /ping executado automaticamente no início.");
     }
   }
-
-  function updateLastDate(date) {
-    fs.writeFileSync(lastPingPath, JSON.stringify({ lastDate: date }, null, 2));
-  }
-
-  async function sendPingIfNeeded() {
-    const today = dayjs().format("YYYY-MM-DD");
-    const lastDate = getLastDate();
-
-    if (lastDate !== today) {
-      const guild = await client.guilds.fetch(process.env.GUILD_ID);
-      const channel = guild.channels.cache.find(c => c.isTextBased() && c.viewable);
-      if (channel) {
-        await channel.send("/ping");
-        console.log(`📤 /ping enviado em ${today}`);
-        updateLastDate(today);
-      }
-    } else {
-      console.log(`✅ Já enviou /ping em ${today}`);
-    }
-  }
-
-  // Agendamento normal às 12h todo dia
-  cron.schedule("0 12 * * *", sendPingIfNeeded);
-
-  // Failsafe: verifica a cada 30 min se precisa enviar
-  cron.schedule("*/30 * * * *", sendPingIfNeeded);
 });
 
 client.on("interactionCreate", async (interaction) => {
