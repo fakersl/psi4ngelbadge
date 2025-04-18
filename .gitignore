@@ -1,0 +1,17 @@
+# Ignora dependências
+node_modules/
+
+# Ignora variáveis de ambiente
+.env
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode/
