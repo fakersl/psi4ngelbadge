@@ -4,6 +4,7 @@ const path = require("path");
 const dayjs = require("dayjs");
 const cron = require("node-cron");
 require("dotenv").config();
+const token = process.env.TOKEN;
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 

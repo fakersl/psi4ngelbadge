@@ -1,6 +1,7 @@
 // commit-daily.js
 const { exec } = require('child_process');
 const fs = require('fs');
+const token = process.env.TOKEN;
 
 // Lê o arquivo lastPing e verifica a data (ou cria se não existir)
 const lastPingFile = './lastPing.txt';
